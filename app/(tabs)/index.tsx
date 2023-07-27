@@ -1,14 +1,138 @@
-import { StyleSheet } from 'react-native';
-
-import EditScreenInfo from '@/components/EditScreenInfo';
-import { Text, View } from '@/components/Themed';
+import {
+  StyleSheet,
+  TouchableOpacity,
+  FlatList,
+  TextInput,
+} from "react-native";
+import { Link } from "expo-router";
+import { Ionicons } from "@expo/vector-icons";
+import { useEffect, useState } from "react";
+import EditScreenInfo from "@/components/EditScreenInfo";
+import { Text, View } from "@/components/Themed";
 
 export default function TabOneScreen() {
+  const [name, setName] = useState("");
+  const [age, setAge] = useState("");
+  const [updateName, setUpdateName] = useState("");
+  const [update, setUpdate] = useState(false);
+
+  const [data, setData] = useState([]);
+
+  const addPerson = () => {
+    setData((current) => [
+      ...current,
+      {
+        name: name,
+        age: age,
+      },
+    ]);
+  };
+
+  const updatePerson = () => {
+    data.find((person) => {
+      if (person.name == updateName) {
+        person.name = name;
+        person.age = age;
+      }
+    });
+    setUpdate(false);
+    console.log(data);
+  };
+
+  const deletePerson = () => {
+    const num = data.findIndex((person) => {
+      return person.name == updateName;
+    });
+    if (num != -1) {
+      data.splice(num, 1);
+    }
+    console.log(data);
+  };
+
+  const renderItem = ({ item }) => {
+    return (
+      <Link
+        href={{
+          pathname: "/modal",
+          params: { name: item.name, age: item.age },
+        }}
+        style={{ width: "100%" }}
+      >
+        <View
+          style={{
+            flex: 1,
+            flexDirection: "row",
+            width: "100%",
+            justifyContent: "space-evenly",
+            padding: 15,
+            backgroundColor: "#f2f3f4",
+            borderWidth: 1,
+            marginBottom: 5,
+          }}
+        >
+          <Text style={{}}>{item.name}</Text>
+          <Text>{item.age}</Text>
+          <TouchableOpacity
+            onPress={() => {
+              setName(item.name);
+              setAge(item.age);
+              setUpdateName(item.name);
+              setUpdate(true);
+            }}
+          >
+            <Ionicons name="pencil" size={24} color="blue" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={() => {
+              setUpdateName(item.name);
+              deletePerson();
+            }}
+          >
+            <Ionicons name="trash" size={24} color="red" />
+          </TouchableOpacity>
+        </View>
+      </Link>
+    );
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Tab One</Text>
-      <View style={styles.separator} lightColor="#eee" darkColor="rgba(255,255,255,0.1)" />
-      <EditScreenInfo path="app/(tabs)/index.tsx" />
+    <View
+      style={{
+        flex: 1,
+        justifyContent: "center",
+        alignItems: "center",
+        width: "100%",
+      }}
+    >
+      <View style={styles.container}>
+        <TextInput
+          style={styles.input}
+          placeholder="name"
+          onChangeText={setName}
+          value={name}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder="age"
+          onChangeText={setAge}
+          value={age}
+        />
+        {!update ? (
+          <TouchableOpacity style={styles.add} onPress={addPerson}>
+            <Text style={styles.textAdd}>add</Text>
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity style={styles.update} onPress={updatePerson}>
+            <Text style={styles.textAdd}>update</Text>
+          </TouchableOpacity>
+        )}
+      </View>
+
+      <FlatList
+        data={data}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.name}
+      />
     </View>
   );
 }
@@ -16,16 +140,41 @@ export default function TabOneScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#fff",
+    padding: 20,
+    display: "flex",
+    width: "100%",
+    flexDirection: "row",
+    justifyContent: "space-around",
   },
-  title: {
-    fontSize: 20,
-    fontWeight: 'bold',
+  input: {
+    width: "40%",
+    height: 30,
+    borderWidth: 1,
+    paddingLeft: 10,
+    borderRadius: 3,
   },
-  separator: {
-    marginVertical: 30,
-    height: 1,
-    width: '80%',
+  add: {
+    backgroundColor: "green",
+    width: "10%",
+    height: 30,
+    color: "white",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 5,
+  },
+  textAdd: {
+    color: "white",
+  },
+  update: {
+    backgroundColor: "skyblue",
+    width: "15%",
+    height: 30,
+    color: "white",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+    borderRadius: 5,
   },
 });
